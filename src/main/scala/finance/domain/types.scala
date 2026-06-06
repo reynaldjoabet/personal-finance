@@ -53,6 +53,16 @@ object Merchant extends RefinedType[String, Not[Blank] & MaxLength[200]] {}
 type CategoryLabel = CategoryLabel.T
 object CategoryLabel extends RefinedType[String, Not[Blank] & MaxLength[64]] {}
 
+/** Bcrypt hash string. The constraint is intentionally loose because hash formats vary; we just want a non-blank,
+  * bounded String so a malformed row can't sneak past the DB boundary.
+  */
+type PasswordHash = PasswordHash.T
+object PasswordHash extends RefinedType[String, Not[Blank] & MaxLength[120]] {}
+
+/** Plaintext password coming in over the wire. 8..200 chars; everything else is the hashing function's problem. */
+type PlainPassword = PlainPassword.T
+object PlainPassword extends RefinedType[String, MinLength[8] & MaxLength[200]] {}
+
 // ---------- Aggregates ----------
 
 final case class User(

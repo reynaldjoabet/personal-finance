@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email         VARCHAR(254) NOT NULL UNIQUE,
     display_name  VARCHAR(120) NOT NULL,
+    password_hash VARCHAR(120) NOT NULL,
     created_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
@@ -36,3 +37,13 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 CREATE INDEX IF NOT EXISTS tx_account_date_idx ON transactions(account_id, occurred_on DESC);
 CREATE INDEX IF NOT EXISTS tx_category_idx     ON transactions(category) WHERE category IS NOT NULL;
+
+-- Per-user TrueLayer OAuth tokens. One row per user; refresh updates in place.
+CREATE TABLE IF NOT EXISTS truelayer_tokens (
+    user_id       UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    access_token  TEXT        NOT NULL,
+    refresh_token TEXT        NOT NULL,
+    expires_at    TIMESTAMPTZ NOT NULL,
+    scope         TEXT,
+    updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);

@@ -30,6 +30,9 @@ object Codecs {
   val merchant: Codec[Merchant] =
     varchar(200).refined[Not[Blank] & MaxLength[200]].imap(Merchant.assume)(_.value)
 
+  val passwordHash: Codec[PasswordHash] =
+    varchar(120).refined[Not[Blank] & MaxLength[120]].imap(PasswordHash.assume)(_.value)
+
   val category: Codec[CategoryLabel] =
     varchar(64).refined[Not[Blank] & MaxLength[64]].imap(CategoryLabel.assume)(_.value)
 
@@ -55,7 +58,7 @@ object Codecs {
       case AccountKind.Credit   => "credit"
     }
 
-  private val instant: Codec[java.time.Instant] =
+  val instant: Codec[java.time.Instant] =
     timestamptz.imap(_.toInstant)(_.atOffset(ZoneOffset.UTC))
 
   // --- aggregates ---

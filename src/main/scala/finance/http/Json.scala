@@ -6,7 +6,7 @@ import io.circe.*
 import io.circe.generic.semiauto.*
 import io.github.iltotore.iron.circe.given
 
-import java.time.YearMonth
+import java.time.{Instant, YearMonth}
 
 /** Circe codecs. `iron-circe` derives codecs for the refined opaque newtypes automatically via `RefinedType.Mirror`.
   */
@@ -35,6 +35,23 @@ object Json {
   given Encoder[MonthlySummary] = deriveEncoder
   given Encoder[Insight] = deriveEncoder
 
-  final case class CreateUser(email: Email, displayName: DisplayName)
-  given Decoder[CreateUser] = deriveDecoder
+  /** Request bodies for the auth endpoints. */
+  final case class Register(email: Email, displayName: DisplayName, password: PlainPassword)
+  given Decoder[Register] = deriveDecoder
+
+  final case class Login(email: Email, password: PlainPassword)
+  given Decoder[Login] = deriveDecoder
+
+  /** Response body: opaque-to-clients JWT plus when it expires. */
+  final case class TokenResponse(token: String, expiresAt: Instant)
+  given Encoder[TokenResponse] = deriveEncoder
+
+  /** What clients get from `GET /truelayer/connect`: the authorize URL to redirect the user to, plus the CSRF state
+    * we'll expect echoed back on the callback.
+    */
+  final case class ConnectResponse(authorizeUrl: String, state: String)
+  given Encoder[ConnectResponse] = deriveEncoder
+
+  final case class SyncResponse(accounts: Int, transactions: Int, skipped: Int)
+  given Encoder[SyncResponse] = deriveEncoder
 }
