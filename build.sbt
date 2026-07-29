@@ -3,23 +3,31 @@ import Dependencies.*
 ThisBuild / scalaVersion := "3.3.8"
 ThisBuild / organization := "io.finance"
 ThisBuild / version := "0.1.0"
+ThisBuild / semanticdbEnabled := true
+
+ThisBuild / scalacOptions := Seq(
+  "-encoding",
+  "UTF-8",
+  "-no-indent",
+  "-deprecation",
+  "-feature",
+  "-unchecked",
+  "-source:3.3",
+  "-java-output-version:17",
+  "-Werror",
+  "-Wshadow:all",
+  "-Wvalue-discard",
+  "-Wnonunit-statement",
+  "-Xlint:all",
+  "-Ysafe-init",
+  "-Xcheck-macros",
+  "-Xmax-inlines:64"
+)
+
+Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val root = (project in file("."))
   .settings(
     name := "personal-finance",
-    scalacOptions ++= Seq(
-      "-encoding",
-      "UTF-8",
-      "-no-indent",
-      "-deprecation",
-      "-feature",
-      "-unchecked",
-      "-Wunused:all",
-      "-Wvalue-discard",
-      "-Wnonunit-statement",
-      "-Ykind-projector",
-      "-Xmax-inlines",
-      "64"
-    ),
     libraryDependencies ++= all
   )
