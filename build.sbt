@@ -15,7 +15,6 @@ ThisBuild / scalacOptions := Seq(
   "-source:3.3",
   "-java-output-version:17",
   "-Werror",
-  "-Wshadow:all",
   "-Wvalue-discard",
   "-Wnonunit-statement",
   "-Xlint:all",
