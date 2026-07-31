@@ -1,24 +1,29 @@
 package finance.http
 
-import finance.domain.UserId
-import finance.service.Auth
-
 import cats.*
 import cats.data.{Kleisli, OptionT}
 import cats.syntax.all.*
+
+import finance.domain.UserId
+import finance.service.Auth
 import org.http4s.*
 import org.http4s.headers.Authorization
 import org.http4s.server.AuthMiddleware as Http4sAuthMiddleware
 import org.typelevel.ci.*
 
-/** Bearer-token middleware. Extracts the JWT from `Authorization: Bearer <token>`, asks the `Auth` service to verify
-  * it, and exposes the authenticated `UserId` to downstream routes via http4s' `AuthedRoutes`.
+/**
+  * Bearer-token middleware. Extracts the JWT from `Authorization: Bearer <token>`, asks the `Auth`
+  * service to verify it, and exposes the authenticated `UserId` to downstream routes via http4s'
+  * `AuthedRoutes`.
   *
-  * A missing or invalid header / token short-circuits to 401 with a `WWW-Authenticate: Bearer` challenge.
+  * A missing or invalid header / token short-circuits to 401 with a `WWW-Authenticate: Bearer`
+  * challenge.
   */
 object AuthMiddleware {
 
-  /** Wrap `AuthedRoutes[UserId, F]` so they only run for requests carrying a valid bearer JWT, returning 401 otherwise.
+  /**
+    * Wrap `AuthedRoutes[UserId, F]` so they only run for requests carrying a valid bearer JWT,
+    * returning 401 otherwise.
     */
   def secure[F[_]: Monad](auth: Auth[F])(authed: AuthedRoutes[UserId, F]): HttpRoutes[F] = {
 
@@ -49,4 +54,5 @@ object AuthMiddleware {
         case _                                       => None
       }
     }
+
 }

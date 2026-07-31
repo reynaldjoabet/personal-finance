@@ -1,21 +1,22 @@
 package finance.service
 
-import finance.db.{Accounts, TlTokens, Transactions, TrueLayerTokens}
-import finance.domain.*
-import finance.truelayer.TrueLayer
+import java.time.{Instant, LocalDate}
 
 import cats.effect.*
 import cats.syntax.all.*
+
+import finance.db.{Accounts, TlTokens, Transactions, TrueLayerTokens}
+import finance.domain.*
+import finance.truelayer.TrueLayer
 import org.typelevel.log4cats.Logger
 
-import java.time.{Instant, LocalDate}
-
-/** On-demand sync from TrueLayer into our DB. Pulls the user's accounts, then transactions for each account over the
-  * last `windowDays` days, refreshes the access token if it's expired or within the safety window, and persists via the
-  * `Accounts` / `Transactions` repos.
+/**
+  * On-demand sync from TrueLayer into our DB. Pulls the user's accounts, then transactions for each
+  * account over the last `windowDays` days, refreshes the access token if it's expired or within
+  * the safety window, and persists via the `Accounts` / `Transactions` repos.
   *
-  * Malformed rows from TrueLayer are skipped with a warning rather than failing the whole sync — partial progress beats
-  * none.
+  * Malformed rows from TrueLayer are skipped with a warning rather than failing the whole sync —
+  * partial progress beats none.
   */
 trait TrueLayerSync[F[_]] {
   def syncUser(userId: UserId, windowDays: Int = 90): F[TrueLayerSync.Result]
@@ -27,11 +28,15 @@ object TrueLayerSync {
 
   sealed trait Error extends Product with Serializable
   object Error {
-    case object NotConnected extends Error
+
+    case object NotConnected                   extends Error
     final case class Upstream(message: String) extends Error
+
   }
 
-  /** Refresh ~60s before actual expiry so a slow round-trip can't expire mid-call. */
+  /**
+    * Refresh ~60s before actual expiry so a slow round-trip can't expire mid-call.
+    */
   private val refreshSkewSeconds: Long = 60L
 
   def make[F[_]: Async: Logger](
@@ -49,7 +54,7 @@ object TrueLayerSync {
             freshAccess(userId, t).flatMap { active =>
               val accessTok = TrueLayer.AccessToken(active.accessToken)
               tl.listAccounts(accessTok).flatMap { rawAccounts =>
-                val to = LocalDate.now()
+                val to   = LocalDate.now()
                 val from = to.minusDays(windowDays.toLong)
 
                 rawAccounts.foldLeftM(Result(0, 0, 0)) { (acc, raw) =>
@@ -60,17 +65,20 @@ object TrueLayerSync {
                         .as(acc.copy(skipped = acc.skipped + 1))
                     case Right(account) =>
                       for {
-                        _ <- accounts.upsert(account)
+                        _      <- accounts.upsert(account)
                         rawTxs <- tl.listTransactions(accessTok, account.externalId, from, to)
                         // partitionMap: Left -> first slot, Right -> second. We want the failures (with their raw row
                         // for the log line) on the left and the successfully-promoted Transactions on the right.
                         partitioned = rawTxs.partitionMap { (r: TrueLayer.RawTransaction) =>
-                          TrueLayer.toDomainTransaction(account.id, account.currency, r).left.map(err => (r, err))
-                        }
+                                        TrueLayer
+                                          .toDomainTransaction(account.id, account.currency, r)
+                                          .left
+                                          .map(err => (r, err))
+                                      }
                         (bad, good) = partitioned
-                        _ <- bad.traverse_ { case (r, err) =>
-                          Logger[F].warn(s"skipping tx ${r.transaction_id}: $err")
-                        }
+                        _          <- bad.traverse_ { case (r, err) =>
+                               Logger[F].warn(s"skipping tx ${r.transaction_id}: $err")
+                             }
                         _ <- transactions.insertAll(good)
                       } yield acc.copy(
                         accountsUpserted = acc.accountsUpserted + 1,
@@ -90,4 +98,5 @@ object TrueLayerSync {
           tl.refresh(current.refreshToken).flatTap(tokens.upsert(userId, _))
       }
     }
+
 }

@@ -1,21 +1,30 @@
 package finance.db
 
-import finance.domain.*
-
 import cats.effect.*
 import cats.syntax.all.*
+
+import finance.domain.*
 import skunk.*
-import skunk.implicits.*
 import skunk.codec.all.*
+import skunk.implicits.*
 
 trait Accounts[F[_]] {
+
   def listFor(user: UserId): F[List[Account]]
   def upsert(account: Account): F[Unit]
+
 }
 
 object Accounts {
 
-  import Codecs.{account as accountC, accountId as accountIdC, accountKind, balanceMinor, currency, userId as userIdC}
+  import Codecs.{
+    account as accountC,
+    accountId as accountIdC,
+    accountKind,
+    balanceMinor,
+    currency,
+    userId as userIdC
+  }
 
   def make[F[_]: Concurrent](pool: Resource[F, Session[F]]): Accounts[F] =
     new Accounts[F] {
@@ -41,7 +50,7 @@ object Accounts {
         INSERT INTO accounts (id, user_id, provider, external_id, kind, currency, balance_minor, updated_at)
         VALUES ($accountIdC, $userIdC, ${varchar(64)}, ${varchar(
           128
-        )}, $accountKind, $currency, $balanceMinor, ${timestamptz})
+        )}, $accountKind, $currency, $balanceMinor, $timestamptz)
         ON CONFLICT (provider, external_id) DO UPDATE
           SET balance_minor = EXCLUDED.balance_minor,
               updated_at    = EXCLUDED.updated_at
@@ -58,5 +67,7 @@ object Accounts {
             a.updatedAt.atOffset(java.time.ZoneOffset.UTC)
           )
         )
+
   }
+
 }

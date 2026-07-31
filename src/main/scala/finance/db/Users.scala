@@ -1,29 +1,39 @@
 package finance.db
 
-import finance.domain.*
-
 import cats.effect.*
 import cats.syntax.all.*
+
+import finance.domain.*
 import skunk.*
 import skunk.implicits.*
 
 trait Users[F[_]] {
 
-  /** Create a new user with credentials. Caller is responsible for hashing the password. */
+  /**
+    * Create a new user with credentials. Caller is responsible for hashing the password.
+    */
   def register(email: Email, name: DisplayName, hash: PasswordHash): F[User]
 
   def find(id: UserId): F[Option[User]]
   def findByEmail(email: Email): F[Option[User]]
 
-  /** Look up the stored bcrypt hash for password verification. Returns the user + hash together so the caller can issue
-    * a token without a second round trip.
+  /**
+    * Look up the stored bcrypt hash for password verification. Returns the user + hash together so
+    * the caller can issue a token without a second round trip.
     */
   def findCredentials(email: Email): F[Option[(User, PasswordHash)]]
+
 }
 
 object Users {
 
-  import Codecs.{email as emailC, displayName as nameC, passwordHash as hashC, user as userC, userId as userIdC}
+  import Codecs.{
+    displayName as nameC,
+    email as emailC,
+    passwordHash as hashC,
+    user as userC,
+    userId as userIdC
+  }
 
   def make[F[_]: Concurrent](pool: Resource[F, Session[F]]): Users[F] =
     new Users[F] {
@@ -67,5 +77,7 @@ object Users {
         SELECT id, email, display_name, created_at, password_hash
         FROM users WHERE email = $emailC
       """.query(userC *: hashC)
+
   }
+
 }

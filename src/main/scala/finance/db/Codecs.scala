@@ -1,18 +1,21 @@
 package finance.db
 
+import java.time.ZoneOffset
+
 import finance.domain.*
 import skunk.{Transaction as _, *}
 import skunk.codec.all.*
 import org.typelevel.twiddles.syntax.*
 import io.github.iltotore.iron.constraint.all.*
 import io.github.iltotore.iron.skunk.*
-import java.time.ZoneOffset
 
-/** Skunk codecs for the domain.
+/**
+  * Skunk codecs for the domain.
   *
-  * `iron-skunk` adds an extension `codec.refined[C]: Codec[A :| C]` that decodes via the base codec and then runs the
-  * Iron constraint at the boundary. `_.value` (provided by RefinedType) unwraps the opaque type back to its IronType,
-  * and `assume` rewraps a known-good value without re-validating.
+  * `iron-skunk` adds an extension `codec.refined[C]: Codec[A :| C]` that decodes via the base codec
+  * and then runs the Iron constraint at the boundary. `_.value` (provided by RefinedType) unwraps
+  * the opaque type back to its IronType, and `assume` rewraps a known-good value without
+  * re-validating.
   */
 object Codecs {
 
@@ -42,8 +45,8 @@ object Codecs {
   val balanceMinor: Codec[BalanceMinor] =
     int8.imap(BalanceMinor.assume)(_.value)
 
-  val userId: Codec[UserId] = uuid.imap(UserId.assume)(_.value)
-  val accountId: Codec[AccountId] = uuid.imap(AccountId.assume)(_.value)
+  val userId: Codec[UserId]               = uuid.imap(UserId.assume)(_.value)
+  val accountId: Codec[AccountId]         = uuid.imap(AccountId.assume)(_.value)
   val transactionId: Codec[TransactionId] = uuid.imap(TransactionId.assume)(_.value)
 
   val accountKind: Codec[AccountKind] =
@@ -73,8 +76,9 @@ object Codecs {
 
   val account: Codec[Account] =
     (accountId *: userId *: varchar(64) *: varchar(128) *: accountKind *:
-      currency *: balanceMinor *: instant).imap { case (id, (uid, (prov, (ext, (k, (cur, (bal, ua))))))) =>
-      Account(id, uid, prov, ext, k, cur, bal, ua)
+      currency *: balanceMinor *: instant).imap {
+      case (id, (uid, (prov, (ext, (k, (cur, (bal, ua))))))) =>
+        Account(id, uid, prov, ext, k, cur, bal, ua)
     }(a =>
       (
         a.id,
@@ -89,16 +93,17 @@ object Codecs {
     )
 
   val transaction: Codec[finance.domain.Transaction] =
-    (transactionId *: accountId *: date *: amountMinor *: currency *: merchant *: category.opt).imap {
-      case (id, (aid, (occ, (amt, (cur, (mer, cat)))))) =>
+    (transactionId *: accountId *: date *: amountMinor *: currency *: merchant *: category.opt)
+      .imap { case (id, (aid, (occ, (amt, (cur, (mer, cat)))))) =>
         finance.domain.Transaction(id, aid, occ, amt, cur, mer, cat)
-    }(t =>
-      (
-        t.id,
+      }(t =>
         (
-          t.accountId,
-          (t.occurredOn, (t.amount, (t.currency, (t.merchant, t.category))))
+          t.id,
+          (
+            t.accountId,
+            (t.occurredOn, (t.amount, (t.currency, (t.merchant, t.category))))
+          )
         )
       )
-    )
+
 }

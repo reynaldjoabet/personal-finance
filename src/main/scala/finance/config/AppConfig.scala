@@ -13,9 +13,11 @@ final case class DbConfig(
 
 final case class HttpConfig(host: String, port: Int)
 
-/** JWT signing config. RS256: the service signs with `privateKeyPem` and the same (or another) service verifies with
-  * `publicKeyPem`. Both are PKCS#8/X.509 PEM strings (the usual `-----BEGIN PRIVATE KEY-----` / `-----BEGIN PUBLIC
-  * KEY-----` formats); newlines in env vars are tolerated as either real `\n` or the literal two-character escape.
+/**
+  * JWT signing config. RS256: the service signs with `privateKeyPem` and the same (or another)
+  * service verifies with `publicKeyPem`. Both are PKCS#8/X.509 PEM strings (the usual
+  * `-----BEGIN PRIVATE KEY-----` / `-----BEGIN PUBLIC KEY-----` formats); newlines in env vars are
+  * tolerated as either real `\n` or the literal two-character escape.
   */
 final case class AuthConfig(
     privateKeyPem: String,
@@ -25,17 +27,18 @@ final case class AuthConfig(
     expirySeconds: Long
 )
 
-/** TrueLayer OAuth2 client config. `apiBase` is the data API; `authBase` is the consent/token host (different hostnames
-  * in TrueLayer's sandbox and prod).
+/**
+  * TrueLayer OAuth2 client config. `apiBase` is the data API; `authBase` is the consent/token host
+  * (different hostnames in TrueLayer's sandbox and prod).
   */
 final case class TrueLayerConfig(
     clientId: String,
     clientSecret: String,
-    authBase: String, // e.g. https://auth.truelayer-sandbox.com
-    apiBase: String, // e.g. https://api.truelayer-sandbox.com
+    authBase: String,    // e.g. https://auth.truelayer-sandbox.com
+    apiBase: String,     // e.g. https://api.truelayer-sandbox.com
     redirectUri: String, // must match what's registered with TrueLayer
-    scopes: String, // space-separated, e.g. "info accounts balance transactions offline_access"
-    providers: String // comma-separated TrueLayer provider ids, e.g. "uk-cs-mock,uk-ob-all"
+    scopes: String,      // space-separated, e.g. "info accounts balance transactions offline_access"
+    providers: String    // comma-separated TrueLayer provider ids, e.g. "uk-cs-mock,uk-ob-all"
 )
 
 final case class AppConfig(
@@ -47,11 +50,13 @@ final case class AppConfig(
 
 object AppConfig {
 
-  /** Read configuration from environment variables. Fail fast if anything required is missing. */
+  /**
+    * Read configuration from environment variables. Fail fast if anything required is missing.
+    */
   def load[F[_]: Sync]: F[AppConfig] = Sync[F].delay {
-    def env(name: String): Option[String] = sys.env.get(name).filter(_.nonEmpty)
-    def req(name: String): String = env(name).getOrElse(sys.error(s"missing env var: $name"))
-    def int(name: String, default: Int): Int = env(name).map(_.toInt).getOrElse(default)
+    def env(name: String): Option[String]       = sys.env.get(name).filter(_.nonEmpty)
+    def req(name: String): String               = env(name).getOrElse(sys.error(s"missing env var: $name"))
+    def int(name: String, default: Int): Int    = env(name).map(_.toInt).getOrElse(default)
     def long(name: String, default: Long): Long = env(name).map(_.toLong).getOrElse(default)
     // Allow PEMs to be provided with literal "\n" sequences (common when stuffing into a single env line).
     def pem(name: String): String = req(name).replace("\\n", "\n")
@@ -82,9 +87,11 @@ object AppConfig {
         authBase = env("TRUELAYER_AUTH_BASE").getOrElse("https://auth.truelayer-sandbox.com"),
         apiBase = env("TRUELAYER_API_BASE").getOrElse("https://api.truelayer-sandbox.com"),
         redirectUri = req("TRUELAYER_REDIRECT_URI"),
-        scopes = env("TRUELAYER_SCOPES").getOrElse("info accounts balance transactions offline_access"),
+        scopes =
+          env("TRUELAYER_SCOPES").getOrElse("info accounts balance transactions offline_access"),
         providers = env("TRUELAYER_PROVIDERS").getOrElse("uk-cs-mock,uk-ob-all")
       )
     )
   }
+
 }

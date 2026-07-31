@@ -1,32 +1,40 @@
 package finance.service
 
-import finance.config.AuthConfig
-import finance.db.Users
-import finance.domain.*
-
-import cats.effect.*
-import cats.syntax.all.*
-import com.nimbusds.jose.{JOSEException, JWSAlgorithm, JWSHeader}
-import com.nimbusds.jose.crypto.{RSASSASigner, RSASSAVerifier}
-import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
-import com.password4j.Password
-
 import java.security.{KeyFactory, PrivateKey, PublicKey}
 import java.security.interfaces.{RSAPrivateKey, RSAPublicKey}
 import java.security.spec.{PKCS8EncodedKeySpec, X509EncodedKeySpec}
 import java.time.Instant
 import java.util.{Base64, Date, UUID}
 
-/** Authentication: bcrypt-based password verification plus RS256 JWT issuance/verification.
+import cats.effect.*
+import cats.syntax.all.*
+
+import finance.config.AuthConfig
+import finance.db.Users
+import finance.domain.*
+import com.nimbusds.jose.{JOSEException, JWSAlgorithm, JWSHeader}
+import com.nimbusds.jose.crypto.{RSASSASigner, RSASSAVerifier}
+import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
+import com.password4j.Password
+
+/**
+  * Authentication: bcrypt-based password verification plus RS256 JWT issuance/verification.
   *
-  * `register` and `login` return a `Token` containing a serialized JWT whose subject is the user id. `verify` is what
-  * the http4s middleware calls on every request — it parses, checks the signature, and enforces issuer / audience /
-  * expiry before handing back the `UserId`.
+  * `register` and `login` return a `Token` containing a serialized JWT whose subject is the user
+  * id. `verify` is what the http4s middleware calls on every request — it parses, checks the
+  * signature, and enforces issuer / audience / expiry before handing back the `UserId`.
   */
 trait Auth[F[_]] {
-  def register(email: Email, name: DisplayName, password: PlainPassword): F[Either[Auth.Error, (User, Auth.Token)]]
+
+  def register(
+      email: Email,
+      name: DisplayName,
+      password: PlainPassword
+  ): F[Either[Auth.Error, (User, Auth.Token)]]
+
   def login(email: Email, password: PlainPassword): F[Either[Auth.Error, (User, Auth.Token)]]
   def verify(token: String): F[Either[Auth.Error, UserId]]
+
 }
 
 object Auth {
@@ -35,13 +43,18 @@ object Auth {
 
   sealed trait Error extends Product with Serializable
   object Error {
-    case object EmailTaken extends Error
-    case object InvalidCredentials extends Error
-    case object InvalidToken extends Error
+
+    case object EmailTaken                     extends Error
+    case object InvalidCredentials             extends Error
+    case object InvalidToken                   extends Error
     final case class Internal(message: String) extends Error
+
   }
 
-  /** Strip the PEM armor and decode the body as base64. Works for both PKCS#8 private keys and X.509 public keys. */
+  /**
+    * Strip the PEM armor and decode the body as base64. Works for both PKCS#8 private keys and
+    * X.509 public keys.
+    */
   private def decodePem(pem: String): Array[Byte] = {
     val cleaned = pem.linesIterator
       .map(_.trim)
@@ -63,16 +76,16 @@ object Auth {
   def make[F[_]: Sync](users: Users[F], cfg: AuthConfig): F[Auth[F]] = Sync[F].delay {
 
     val privateKey: PrivateKey = loadPrivateKey(cfg.privateKeyPem)
-    val publicKey: PublicKey = loadPublicKey(cfg.publicKeyPem)
-    val signer = new RSASSASigner(privateKey)
-    val verifier = new RSASSAVerifier(publicKey.asInstanceOf[RSAPublicKey])
+    val publicKey: PublicKey   = loadPublicKey(cfg.publicKeyPem)
+    val signer                 = new RSASSASigner(privateKey)
+    val verifier               = new RSASSAVerifier(publicKey.asInstanceOf[RSAPublicKey])
 
     new Auth[F] {
 
       private def issue(userId: UserId): F[Token] = Sync[F].delay {
-        val now = Instant.now()
+        val now       = Instant.now()
         val expiresAt = now.plusSeconds(cfg.expirySeconds)
-        val claims = new JWTClaimsSet.Builder()
+        val claims    = new JWTClaimsSet.Builder()
           .subject(userId.value.toString)
           .issuer(cfg.issuer)
           .audience(cfg.audience)
@@ -94,7 +107,11 @@ object Auth {
         Password.check(plain.value, stored.value).withBcrypt()
       }
 
-      def register(email: Email, name: DisplayName, password: PlainPassword): F[Either[Error, (User, Token)]] =
+      def register(
+          email: Email,
+          name: DisplayName,
+          password: PlainPassword
+      ): F[Either[Error, (User, Token)]] =
         users.findByEmail(email).flatMap {
           case Some(_) => Sync[F].pure(Left(Error.EmailTaken))
           case None    =>
@@ -120,9 +137,9 @@ object Auth {
           val jwt = SignedJWT.parse(token)
           if (!jwt.verify(verifier)) Left(Error.InvalidToken)
           else {
-            val claims = jwt.getJWTClaimsSet
-            val now = new Date()
-            val okIssuer = claims.getIssuer == cfg.issuer
+            val claims     = jwt.getJWTClaimsSet
+            val now        = new Date()
+            val okIssuer   = claims.getIssuer == cfg.issuer
             val okAudience = Option(claims.getAudience).exists(_.contains(cfg.audience))
             val notExpired = Option(claims.getExpirationTime).exists(_.after(now))
             if (!okIssuer || !okAudience || !notExpired) Left(Error.InvalidToken)
@@ -141,4 +158,5 @@ object Auth {
       }
     }
   }
+
 }

@@ -1,25 +1,27 @@
 package finance.http
 
+import java.time.YearMonth
+import java.util.UUID
+
+import cats.effect.*
+import cats.syntax.all.*
+
 import finance.db.*
 import finance.domain.*
 import finance.service.*
 import finance.truelayer.TrueLayer
-
-import cats.effect.*
-import cats.syntax.all.*
 import io.circe.syntax.*
 import org.http4s.*
 import org.http4s.circe.CirceEntityCodec.*
 import org.http4s.dsl.Http4sDsl
 
-import java.time.YearMonth
-import java.util.UUID
-
-/** Bundles together the public routes (health, auth, truelayer callback) and the authenticated routes (everything under
-  * `/users/{id}` and `/truelayer/connect`), combining them into one `HttpRoutes[F]`.
+/**
+  * Bundles together the public routes (health, auth, truelayer callback) and the authenticated
+  * routes (everything under `/users/{id}` and `/truelayer/connect`), combining them into one
+  * `HttpRoutes[F]`.
   *
-  * The authed routes additionally enforce that the path's user id matches the authenticated subject — a token holder
-  * can only act on their own resources.
+  * The authed routes additionally enforce that the path's user id matches the authenticated subject
+  * — a token holder can only act on their own resources.
   */
 final class Routes[F[_]: Async](
     auth: Auth[F],
@@ -36,19 +38,25 @@ final class Routes[F[_]: Async](
   import Json.given
 
   private object MonthVar {
+
     def unapply(s: String): Option[YearMonth] =
       scala.util.Try(YearMonth.parse(s)).toOption
+
   }
 
   private object UserIdVar {
+
     def unapply(s: String): Option[UserId] =
       scala.util.Try(UUID.fromString(s)).toOption.map(UserId.assume)
+
   }
 
-  private object CodeQP extends QueryParamDecoderMatcher[String]("code")
+  private object CodeQP  extends QueryParamDecoderMatcher[String]("code")
   private object StateQP extends QueryParamDecoderMatcher[String]("state")
 
-  /** Public routes that don't need a token. */
+  /**
+    * Public routes that don't need a token.
+    */
   private val publicRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
 
     case GET -> Root / "health" =>
@@ -81,11 +89,15 @@ final class Routes[F[_]: Async](
             .exchangeCode(code)
             .flatMap(tokens => tlTokens.upsert(userId, tokens))
             .flatMap(_ => Ok(Map("connected" -> true).asJson))
-            .handleErrorWith(e => BadGateway(errorJson(s"truelayer token exchange failed: ${e.getMessage}")))
+            .handleErrorWith(e =>
+              BadGateway(errorJson(s"truelayer token exchange failed: ${e.getMessage}"))
+            )
       }
   }
 
-  /** Authed routes — the path's `{id}` must equal the JWT subject. */
+  /**
+    * Authed routes — the path's `{id}` must equal the JWT subject.
+    */
   private val authedRoutes: AuthedRoutes[UserId, F] = AuthedRoutes.of[UserId, F] {
 
     case GET -> Root / "users" / UserIdVar(id) as me =>
@@ -112,7 +124,9 @@ final class Routes[F[_]: Async](
       requireSelf(id, me) {
         sync
           .syncUser(id)
-          .flatMap(r => Ok(Json.SyncResponse(r.accountsUpserted, r.transactionsInserted, r.skipped)))
+          .flatMap(r =>
+            Ok(Json.SyncResponse(r.accountsUpserted, r.transactionsInserted, r.skipped))
+          )
           .handleErrorWith {
             case e if Option(e.getMessage).exists(_.contains("has not connected")) =>
               Conflict(errorJson("user has not connected TrueLayer; call /truelayer/connect first"))
@@ -135,4 +149,5 @@ final class Routes[F[_]: Async](
 
   private def requireSelf(pathId: UserId, me: UserId)(action: F[Response[F]]): F[Response[F]] =
     if (pathId == me) action else Forbidden(errorJson("not your resource"))
+
 }

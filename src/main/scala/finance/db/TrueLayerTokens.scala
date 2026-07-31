@@ -1,17 +1,19 @@
 package finance.db
 
-import finance.domain.*
+import java.time.Instant
 
 import cats.effect.*
 import cats.syntax.all.*
+
+import finance.domain.*
 import skunk.*
 import skunk.codec.all.*
 import skunk.implicits.*
 
-import java.time.Instant
-
-/** Per-user OAuth tokens for TrueLayer. We store the refresh token alongside the access token so the sync job can mint
-  * a fresh access token without dragging the user back through the consent screen.
+/**
+  * Per-user OAuth tokens for TrueLayer. We store the refresh token alongside the access token so
+  * the sync job can mint a fresh access token without dragging the user back through the consent
+  * screen.
   */
 final case class TlTokens(
     accessToken: String,
@@ -21,14 +23,16 @@ final case class TlTokens(
 )
 
 trait TrueLayerTokens[F[_]] {
+
   def upsert(userId: UserId, tokens: TlTokens): F[Unit]
   def find(userId: UserId): F[Option[TlTokens]]
   def delete(userId: UserId): F[Unit]
+
 }
 
 object TrueLayerTokens {
 
-  import Codecs.{userId as userIdC, instant as instantC}
+  import Codecs.{instant as instantC, userId as userIdC}
 
   def make[F[_]: Concurrent](pool: Resource[F, Session[F]]): TrueLayerTokens[F] =
     new TrueLayerTokens[F] {
@@ -72,5 +76,7 @@ object TrueLayerTokens {
 
     val delete: Command[UserId] =
       sql"DELETE FROM truelayer_tokens WHERE user_id = $userIdC".command
+
   }
+
 }
