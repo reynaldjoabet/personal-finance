@@ -63,7 +63,7 @@ object Insights {
     if (series.size < 3) None
     else {
       val cats = series.flatMap(_.byCategory.map(_.category)).distinct
-      cats.collectFirst(Function.unlift { c =>
+      cats.collectFirst(Function.unlift { (c: CategoryLabel) =>
         val totals = series.map(_.byCategory.find(_.category == c).fold(0L)(_.totalMinor.abs))
         if (totals.forall(_ > 0) && totals(1) > totals(0) * 1.25 && totals(2) > totals(1) * 1.25)
           Some(

@@ -41,7 +41,7 @@ object Auth {
 
   final case class Token(value: String, expiresAt: Instant)
 
-  sealed trait Error extends Product with Serializable
+  sealed trait Error extends Product with Serializable derives CanEqual
   object Error {
 
     case object EmailTaken                     extends Error

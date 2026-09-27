@@ -9,7 +9,9 @@ import io.github.iltotore.iron.constraint.all.*
 // ---------- Identifiers (opaque newtypes over UUID/Long) ----------
 
 type UserId = UserId.T
-object UserId extends RefinedType[UUID, Pure] {}
+object UserId extends RefinedType[UUID, Pure] {
+  given CanEqual[T, T] = CanEqual.derived
+}
 
 type AccountId = AccountId.T
 object AccountId extends RefinedType[UUID, Pure] {}
@@ -64,7 +66,9 @@ object Merchant extends RefinedType[String, Not[Blank] & MaxLength[200]] {}
   * Category label used when the ML engine assigns a class.
   */
 type CategoryLabel = CategoryLabel.T
-object CategoryLabel extends RefinedType[String, Not[Blank] & MaxLength[64]] {}
+object CategoryLabel extends RefinedType[String, Not[Blank] & MaxLength[64]] {
+  given CanEqual[T, T] = CanEqual.derived
+}
 
 /**
   * Bcrypt hash string. The constraint is intentionally loose because hash formats vary; we just
@@ -89,7 +93,7 @@ final case class User(
     createdAt: Instant
 )
 
-enum AccountKind {
+enum AccountKind derives CanEqual {
   case Checking, Savings, Credit
 }
 
