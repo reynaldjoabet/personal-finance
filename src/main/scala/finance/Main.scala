@@ -20,6 +20,11 @@ object Main extends IOApp.Simple {
 
   def run: IO[Unit] = {
     given org.typelevel.log4cats.Logger[IO] = Slf4jLogger.getLogger[IO]
+    // skunk 2.x resolves provider instances where 1.x took a Tracer and Meter directly
+    given org.typelevel.otel4s.trace.TracerProvider[IO] =
+      org.typelevel.otel4s.trace.TracerProvider.noop[IO]
+    given org.typelevel.otel4s.metrics.MeterProvider[IO] =
+      org.typelevel.otel4s.metrics.MeterProvider.noop[IO]
 
     val server: Resource[IO, Unit] =
       for {

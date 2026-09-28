@@ -4,8 +4,8 @@ object Dependencies {
 
   private object V {
 
-    val iron             = "3.3.2"
-    val skunk            = "1.1.0-RC1" // pinned: iron-skunk 3.3.2 builds against skunk-core 1.x (2.x evicts)
+    val iron             = "3.4.0-RC1" // moves with skunk: 3.4.x is the first iron built on skunk 2.x
+    val skunk            = "2.0.0-RC3" // moves with iron and otel4s; see the note on V.iron
     val http4s           = "0.23.37"
     val circe            = "0.14.16"
     val ce               = "3.7.1"
@@ -35,7 +35,7 @@ object Dependencies {
     // --- Observability ---
     val datadog = "2.60.0"
     val kamon   = "2.8.1"
-    val otel4s  = "0.16.0" // pinned: follows skunk-core 1.x; otel4s 1.x needs skunk 2.x
+    val otel4s  = "1.1.0" // follows skunk-core 2.x, which depends on otel4s-core 1.1.0
 
     // --- Config ---
     val pureconfig = "0.17.10"
