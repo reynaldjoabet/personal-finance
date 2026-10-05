@@ -10,17 +10,17 @@ object Dependencies {
     val circe            = "0.14.16"
     val ce               = "3.7.1"
     val log4cats         = "2.8.0"
-    val logback          = "1.6.4"
+    val logback          = "1.6.5"
     val munit            = "1.3.6"
     val munitCE          = "2.2.1"
     val jsoniter         = "2.40.1"
     val fs2              = "3.14.0"
-    val fs2Kafka         = "4.1.1"
-    val chimney          = "2.0.0"
+    val fs2Kafka         = "4.1.2"
+    val chimney          = "2.1.0"
     val hedgehog         = "0.14.0"
     val scalacheck       = "1.20.0"
     val hikaricp         = "7.1.0"
-    val flyway           = "13.8.0"
+    val flyway           = "13.9.0"
     val postgres         = "42.7.13"
     val bouncycastle     = "1.86"
     val password4j       = "1.8.4"
@@ -33,7 +33,7 @@ object Dependencies {
     val caffeine = "3.3.0"
 
     // --- Observability ---
-    val datadog = "2.60.0"
+    val datadog = "2.61.0"
     val kamon   = "2.8.1"
     val otel4s  = "1.1.0" // follows skunk-core 2.x, which depends on otel4s-core 1.1.0
 
