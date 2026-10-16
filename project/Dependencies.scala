@@ -44,10 +44,10 @@ object Dependencies {
     val logback  = "1.6.5"
 
     // --- Cache ---
-    val caffeine = "3.3.0"
+    val caffeine = "3.3.1"
 
     // --- Observability ---
-    val datadog = "2.61.0"
+    val datadog = "2.62.0"
     val kamon   = "2.8.1"
     val otel4s  = "1.1.0" // locked to iron and skunk; see the note on Versions.iron
 
