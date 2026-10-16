@@ -5,10 +5,11 @@ object Dependencies {
   private object Versions {
 
     // --- FP ---
-    val catsEffect = "3.7.1"
-    val fs2        = "3.14.0"
-    val fs2Kafka   = "4.1.3"
-    val chimney    = "2.1.0"
+    val catsEffect    = "3.7.1"
+    val fs2           = "3.14.0"
+    val fs2Kafka      = "4.1.3"
+    val chimney       = "2.1.0"
+    val uuidGenerator = "5.2.0"
 
     // Locked set: iron-skunk 3.4.x is the first iron built against skunk-core 2.x, and
     // skunk 2.x in turn depends on otel4s-core 1.1.0. Bump iron, skunk and otel4s
@@ -135,6 +136,8 @@ object Dependencies {
   object domain {
 
     val chimney = "io.scalaland" %% "chimney" % Versions.chimney
+
+    val uuidGenerator = "com.fasterxml.uuid" % "java-uuid-generator" % Versions.uuidGenerator
 
     object iron {
 

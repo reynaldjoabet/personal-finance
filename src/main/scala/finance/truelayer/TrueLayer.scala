@@ -1,7 +1,6 @@
 package finance.truelayer
 
 import java.time.{Instant, LocalDate}
-import java.util.UUID
 
 import cats.effect.*
 import cats.syntax.all.*
@@ -188,7 +187,7 @@ object TrueLayer {
                 case other                     => Left(s"unknown TrueLayer account_type: $other")
               }
     } yield Account(
-      id = AccountId.assume(UUID.randomUUID()),
+      id = AccountId.assume(Uuid.next()),
       userId = userId,
       provider = "truelayer",
       externalId = raw.account_id,
@@ -210,7 +209,7 @@ object TrueLayer {
                CategoryLabel.either(_).map(Some(_))
              )
     } yield Transaction(
-      id = TransactionId.assume(UUID.randomUUID()),
+      id = TransactionId.assume(Uuid.next()),
       accountId = accountId,
       occurredOn = raw.timestamp.atZone(java.time.ZoneOffset.UTC).toLocalDate,
       amount = amt,

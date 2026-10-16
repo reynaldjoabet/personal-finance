@@ -91,7 +91,7 @@ object Auth {
           .audience(cfg.audience)
           .issueTime(Date.from(now))
           .expirationTime(Date.from(expiresAt))
-          .jwtID(UUID.randomUUID().toString)
+          .jwtID(Uuid.next().toString)
           .build()
         val jwt = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.RS256).build(), claims)
         jwt.sign(signer)

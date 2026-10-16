@@ -39,7 +39,11 @@ object Users {
     new Users[F] {
 
       def register(emailV: Email, nameV: DisplayName, hashV: PasswordHash): F[User] =
-        pool.use(_.prepare(Q.insert).flatMap(_.unique(emailV, nameV, hashV)))
+        // Generated inside `use` so the side effect stays suspended with the rest of the session.
+        pool.use { session =>
+          val id = UserId.assume(Uuid.next())
+          session.prepare(Q.insert).flatMap(_.unique(id, emailV, nameV, hashV))
+        }
 
       def find(id: UserId): F[Option[User]] =
         pool.use(_.prepare(Q.byId).flatMap(_.option(id)))
@@ -53,10 +57,10 @@ object Users {
 
   private object Q {
 
-    val insert: Query[(Email, DisplayName, PasswordHash), User] =
+    val insert: Query[(UserId, Email, DisplayName, PasswordHash), User] =
       sql"""
-        INSERT INTO users (email, display_name, password_hash)
-        VALUES ($emailC, $nameC, $hashC)
+        INSERT INTO users (id, email, display_name, password_hash)
+        VALUES ($userIdC, $emailC, $nameC, $hashC)
         RETURNING id, email, display_name, created_at
       """.query(userC)
 

@@ -30,6 +30,7 @@ lazy val root = (project in file("."))
       Dependencies.core.fs2,
       Dependencies.kafka.fs2,
       Dependencies.domain.chimney,
+      Dependencies.domain.uuidGenerator,
       // HTTP
       Dependencies.http.http4s.circe,
       Dependencies.http.sttp.core,
