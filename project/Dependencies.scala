@@ -27,14 +27,14 @@ object Dependencies {
     // --- DB ---
     val skunk    = "2.0.0-RC3" // locked to iron and otel4s; see the note on Versions.iron
     val hikaricp = "7.1.0"
-    val flyway   = "13.10.0"
+    val flyway   = "13.10.3"
     val postgres = "42.7.14"
 
     // --- Security ---
     val jwtScala         = "11.0.4"
     val bouncycastle     = "1.86"
     val password4j       = "1.8.4"
-    val auth0            = "4.6.1"
+    val auth0            = "4.6.2"
     val nimbusJoseJwt    = "10.10"
     val nimbusOauth2Oidc = "11.38.2"
     val vault            = "5.1.0"
