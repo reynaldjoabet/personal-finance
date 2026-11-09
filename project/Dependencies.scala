@@ -7,7 +7,7 @@ object Dependencies {
     // --- FP ---
     val catsEffect    = "3.7.1"
     val fs2           = "3.14.0"
-    val fs2Kafka      = "4.1.3"
+    val fs2Kafka      = "4.2.0"
     val chimney       = "2.1.0"
     val uuidGenerator = "5.2.0"
 
@@ -27,7 +27,7 @@ object Dependencies {
     // --- DB ---
     val skunk    = "2.0.0-RC3" // locked to iron and otel4s; see the note on Versions.iron
     val hikaricp = "7.1.0"
-    val flyway   = "13.11.1"
+    val flyway   = "13.12.1"
     val postgres = "42.7.14"
 
     // --- Security ---
@@ -36,7 +36,7 @@ object Dependencies {
     val password4j       = "1.8.4"
     val auth0            = "4.6.2"
     val nimbusJoseJwt    = "10.10"
-    val nimbusOauth2Oidc = "11.38.2"
+    val nimbusOauth2Oidc = "11.39"
     val vault            = "5.1.0"
 
     // --- Logging ---
