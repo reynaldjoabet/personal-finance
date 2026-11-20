@@ -6,33 +6,33 @@ object Dependencies {
 
     // --- FP ---
     val catsEffect    = "3.7.1"
-    val fs2           = "3.14.0"
+    val fs2           = "3.16.0"
     val fs2Kafka      = "4.2.0"
-    val chimney       = "2.1.0"
+    val chimney       = "2.1.1"
     val uuidGenerator = "5.2.0"
 
     // Locked set: iron-skunk 3.4.x is the first iron built against skunk-core 2.x, and
     // skunk 2.x in turn depends on otel4s-core 1.1.0. Bump iron, skunk and otel4s
     // together or not at all -- moving one alone fails sbt's eviction check.
-    val iron = "3.4.0-RC1"
+    val iron = "3.4.1"
 
     // --- HTTP ---
-    val http4s = "0.23.37"
-    val sttp4  = "4.0.26"
+    val http4s = "0.23.39"
+    val sttp4  = "4.1.3"
 
     // --- JSON ---
-    val jsoniter = "2.40.1"
-    val circe    = "0.14.16"
+    val jsoniter = "2.43.0"
+    val circe    = "0.14.17"
 
     // --- DB ---
     val skunk    = "2.0.0-RC3" // locked to iron and otel4s; see the note on Versions.iron
     val hikaricp = "7.1.0"
-    val flyway   = "13.12.2"
+    val flyway   = "13.13.0"
     val postgres = "42.7.14"
 
     // --- Security ---
     val jwtScala         = "12.0.0"
-    val bouncycastle     = "1.86"
+    val bouncycastle     = "1.87"
     val password4j       = "1.8.4"
     val auth0            = "4.6.2"
     val nimbusJoseJwt    = "10.10"
@@ -41,7 +41,7 @@ object Dependencies {
 
     // --- Logging ---
     val log4cats = "2.8.0"
-    val logback  = "1.6.6"
+    val logback  = "1.6.8"
 
     // --- Cache ---
     val caffeine = "3.3.1"
@@ -49,15 +49,15 @@ object Dependencies {
     // --- Observability ---
     val datadog = "2.62.0"
     val kamon   = "2.8.1"
-    val otel4s  = "1.1.0" // locked to iron and skunk; see the note on Versions.iron
+    val otel4s  = "1.2.0" // locked to iron and skunk; see the note on Versions.iron
 
     // --- Config ---
-    val pureconfig = "0.17.10"
+    val pureconfig = "0.17.11"
 
     // --- Testing ---
     val munit           = "1.3.6"
     val munitCatsEffect = "2.2.1"
-    val hedgehog        = "0.14.0"
+    val hedgehog        = "0.15.1"
     val scalacheck      = "1.20.0"
 
   }
